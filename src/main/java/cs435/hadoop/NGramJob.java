@@ -2,10 +2,10 @@ package cs435.hadoop;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.MultipleInputs;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class NGramJob {
       Configuration conf = new Configuration();
 
       //Setup for jar of class
-      Job job = Job.getInstance(conf, "Million Song Dataset");
+      Job job = Job.getInstance(conf, "N-Gram Profiles");
       job.setJarByClass(NGramJob.class);
 
       //Set input/output paths
@@ -35,12 +35,17 @@ public class NGramJob {
       //job.setSortComparatorClass(IntComparator.class);
 
       // Outputs from the Mapper.
-      //job.setMapOutputKeyClass(Text.class);
-      //job.setMapOutputValueClass(Text.class);
+      job.setMapOutputKeyClass(LongWritable.class);
+      job.setMapOutputValueClass(Text.class);
 
       //Set the outputs
       job.setOutputKeyClass(Text.class);
       job.setOutputValueClass(Text.class);
+
+      // path to input in HDFS
+      FileInputFormat.addInputPath(job, new Path(args[0]));
+      // path to output in HDFS
+      FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
       // Block until the job is completed.
       System.exit(job.waitForCompletion(true) ? 0 : 1);
