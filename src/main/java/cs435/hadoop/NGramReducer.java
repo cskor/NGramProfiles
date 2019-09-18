@@ -7,19 +7,23 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public class NGramReducer extends Reducer<LongWritable, Text, Text, Text > {
   private Map<String, Integer> NGramCounts;
   private Map<String, Map<String, Integer> > DocIDCounts;
   private LinkedHashMap<String, Integer> sortedValueDocID;
+  private MultipleOutputs out;
 
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {
     NGramCounts = new HashMap<>();
     DocIDCounts = new HashMap<>();
     sortedValueDocID = new LinkedHashMap<>();
+    out = new MultipleOutputs(context);
   }
 
   @Override
@@ -43,12 +47,14 @@ public class NGramReducer extends Reducer<LongWritable, Text, Text, Text > {
         NGramCounts.put(wordKey, 1);
       else
         NGramCounts.put(wordKey, NGramCounts.get(wordKey) + 1);
+
+
     }
   }
 
   @Override
   protected void cleanup(Context context) throws IOException, InterruptedException{
-     /** PROFILE ONE **/
+     /* PROFILE ONE */
     //Print top 500 N-Grams
     TreeMap<String, Integer> sortedNGram = new TreeMap<>(NGramCounts);
 
@@ -56,11 +62,12 @@ public class NGramReducer extends Reducer<LongWritable, Text, Text, Text > {
     for(String word: sortedNGram.keySet()){
       if(count == 500)
         break;
-      context.write(new Text(word), new Text(""));
+      //context.write(new Text(word), new Text(""));
+      out.write("one", new Text(word), NullWritable.get() );
       count ++;
     }
 
-    /** PROFILE TWO **/
+    /* PROFILE TWO */
     //Sort the map by key
     TreeMap<String, Map<String, Integer> > sortedDocID = new TreeMap<>(DocIDCounts);
     Map<String, Integer> wordMap;
@@ -79,12 +86,13 @@ public class NGramReducer extends Reducer<LongWritable, Text, Text, Text > {
       for(String word: sortedValueDocID.keySet()){
         if(count == 500)
           break;
-        context.write(new Text(docID + "\t" + word + "\t" + sortedValueDocID.get(word)), new Text(""));
+        //context.write(new Text(docID + "\t" + word + "\t" + sortedValueDocID.get(word)), new Text(""));
+        out.write("two", new Text(docID + "\t" + word + "\t" + sortedValueDocID.get(word)), NullWritable.get());
         count ++;
       }
     }
 
-    /** PROFILE THREE **/
+    /* PROFILE THREE */
     //Sort the N-Gram map by key
     LinkedHashMap<String, Integer> sortedValueNGram = new LinkedHashMap<>();
     NGramCounts.entrySet()
@@ -96,8 +104,11 @@ public class NGramReducer extends Reducer<LongWritable, Text, Text, Text > {
     for(String word: sortedValueNGram.keySet()){
       if(count == 500)
         break;
-      context.write(new Text(word + "\t"), new Text(sortedValueNGram.get(word).toString()));
+      //context.write(new Text(word + "\t"), new Text(sortedValueNGram.get(word).toString()));
+      out.write("three", new Text(word + "\t" + sortedValueNGram.get(word).toString()), NullWritable.get());
       count ++;
     }
+
+    out.close();
   }
 }

@@ -9,6 +9,9 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import java.io.IOException;
+import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 public class NGramJob {
   public static void main(String[] args) {
@@ -47,14 +50,15 @@ public class NGramJob {
       // path to output in HDFS
       FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
+      MultipleOutputs.addNamedOutput(job, "one", TextOutputFormat.class, Text.class, Text.class);
+      MultipleOutputs.addNamedOutput(job, "two", TextOutputFormat.class, Text.class, Text.class);
+      MultipleOutputs.addNamedOutput(job, "three", TextOutputFormat.class, Text.class, Text.class);
+      LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
+
       // Block until the job is completed.
       System.exit(job.waitForCompletion(true) ? 0 : 1);
 
-    } catch (IOException e) {
-      System.err.println(e.getMessage());
-    } catch (InterruptedException e) {
-      System.err.println(e.getMessage());
-    } catch (ClassNotFoundException e) {
+    } catch (IOException | InterruptedException | ClassNotFoundException e) {
       System.err.println(e.getMessage());
     }
 
