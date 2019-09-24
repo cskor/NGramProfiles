@@ -1,7 +1,7 @@
 #!/bin/bash
 
 gradle build
-#$HADOOP_HOME/bin/hdfs dfsadmin -safemode leave
+$HADOOP_HOME/bin/hdfs dfsadmin -safemode leave
 $HADOOP_HOME/bin/hadoop fs -rm -r /cs435/NGramProfile/P1Results
 $HADOOP_HOME/bin/hadoop jar build/libs/NGramProfile.jar cs435.hadoop.profileOne.ProfileOneJob /cs435/NGramProfile/largeInputs /cs435/NGramProfile/P1Results
 echo Finished Profile One!

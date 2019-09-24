@@ -10,10 +10,12 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 public class ProfileTwoReducer extends Reducer<LongWritable, Text, Text, NullWritable> {
   private Map<String, Integer> wordCount = new HashMap<>();
+  private Map<String, Integer> sortedWordCount = new LinkedHashMap<>();
   
   @Override
   protected void reduce(LongWritable key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
     wordCount.clear();
+    sortedWordCount.clear();
 
     //Add word to tree map with value being occurrences
     for(Text value: values){
@@ -26,9 +28,9 @@ public class ProfileTwoReducer extends Reducer<LongWritable, Text, Text, NullWri
     }
 
     //Sort the tree map by value
-    Map<String, Integer> sortedWordCount = wordCount.entrySet()
+    sortedWordCount = wordCount.entrySet()
         .stream()
-	.sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
         .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
 
     //Print the top 500
