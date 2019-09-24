@@ -3,7 +3,6 @@ package cs435.hadoop.profileTwo;
 import java.io.IOException;
 import java.util.*;
 import static java.util.stream.Collectors.*;
-import static java.util.Map.Entry.*;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
