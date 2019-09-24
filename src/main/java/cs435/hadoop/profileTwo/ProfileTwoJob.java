@@ -22,6 +22,7 @@ public class ProfileTwoJob {
 
       job.setMapperClass(ProfileTwoMapper.class);
       job.setReducerClass(ProfileTwoReducer.class);
+      job.setNumReduceTasks(10);
 
       // Outputs from the Mapper.
       job.setMapOutputKeyClass(LongWritable.class);

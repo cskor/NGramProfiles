@@ -1,17 +1,17 @@
 package cs435.hadoop.profileTwo;
 
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import static java.util.stream.Collectors.*;
+import static java.util.Map.Entry.*;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public class ProfileTwoReducer extends Reducer<LongWritable, Text, Text, NullWritable> {
-  private TreeMap<String, Integer> wordCount = new TreeMap<>();
-  private TreeMap<String, Integer> sortedWordCount = new TreeMap<>();
+  private Map<String, Integer> wordCount = new HashMap<>();
+  
   @Override
   protected void reduce(LongWritable key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
     wordCount.clear();
@@ -27,10 +27,10 @@ public class ProfileTwoReducer extends Reducer<LongWritable, Text, Text, NullWri
     }
 
     //Sort the tree map by value
-    wordCount.entrySet()
+    Map<String, Integer> sortedWordCount = wordCount.entrySet()
         .stream()
-        .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-        .forEachOrdered(x -> sortedWordCount.put(x.getKey(), x.getValue()));
+	.sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
 
     //Print the top 500
     int count = 0;

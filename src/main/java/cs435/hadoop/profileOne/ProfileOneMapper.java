@@ -39,7 +39,8 @@ public class ProfileOneMapper extends Mapper<LongWritable, Text, Text, NullWrita
         modifiedWord = editWord.toLowerCase().replaceAll("[^A-Za-z0-9]", "");
       }
 
-      top500.put(modifiedWord, 1);
+      if(modifiedWord.length() > 0)
+        top500.put(modifiedWord, 1);
       if(top500.size() > 500)
         top500.remove(top500.lastKey());
     }

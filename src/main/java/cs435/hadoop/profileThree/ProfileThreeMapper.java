@@ -1,17 +1,14 @@
 package cs435.hadoop.profileThree;
-
+import java.util.*;
+import static java.util.stream.Collectors.*;
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 public class ProfileThreeMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
-  private TreeMap<String, Integer> wordCount = new TreeMap<>();
+  private Map<String, Integer> wordCount = new HashMap<>();
   protected void map(LongWritable key, Text value, Context context){
 
     //Article ID string
@@ -25,7 +22,7 @@ public class ProfileThreeMapper extends Mapper<LongWritable, Text, Text, IntWrit
       return;
 
     valueString = valueString.substring(startID + idBufferStr.length());
-    String[] words = valueString.split("\\s+\\t+");
+    String[] words = valueString.split("\\s+");
     String modifiedWord;
 
     //Loop through all the words and make the fit the unigram standards
@@ -45,23 +42,20 @@ public class ProfileThreeMapper extends Mapper<LongWritable, Text, Text, IntWrit
       else
         wordCount.put(modifiedWord, 1);
     }
-
   }
+
   @Override
   protected void cleanup(Context context) throws IOException, InterruptedException {
     //Sort all the words in the tree map by occurrence
-    Map<String, Integer> sortedWordCount = new HashMap<>();
-    wordCount.entrySet()
+    Map<String, Integer> sortedWordCount = wordCount.entrySet()
         .stream()
-        .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-        .forEachOrdered(x -> sortedWordCount.put(x.getKey(), x.getValue()));
+        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
 
-    int count = 0;
     for(String word: sortedWordCount.keySet()){
-      if(count == 500)
-        break;
-      context.write(new Text(word), new IntWritable(sortedWordCount.get(word)));
-      count ++;
+     if(word.length() > 0 ){
+       context.write(new Text(word), new IntWritable(sortedWordCount.get(word)));
+     }
     }
   }
 
